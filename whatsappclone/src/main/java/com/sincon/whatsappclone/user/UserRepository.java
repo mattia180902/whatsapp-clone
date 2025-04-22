@@ -1,5 +1,6 @@
 package com.sincon.whatsappclone.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,5 +14,8 @@ public interface UserRepository extends JpaRepository<User, String>{
 
     @Query(name = UserConstants.FIND_USER_BY_PUBLIC_ID)
     Optional<User> findByPublicId(String publicId);
+
+    @Query(name = UserConstants.FIND_ALL_USERS_EXCEPT_SELF)
+    List<User> findAllUsersExceptSelf(@Param("publicId") String senderId);
 
 }

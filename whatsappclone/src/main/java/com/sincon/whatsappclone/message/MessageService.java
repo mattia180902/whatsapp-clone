@@ -10,6 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sincon.whatsappclone.chat.Chat;
 import com.sincon.whatsappclone.chat.ChatRepository;
 import com.sincon.whatsappclone.file.FileService;
+import com.sincon.whatsappclone.file.FileUtils;
+import com.sincon.whatsappclone.notification.Notification;
+import com.sincon.whatsappclone.notification.NotificationService;
+import com.sincon.whatsappclone.notification.NotificationType;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final MessageMapper mapper;
     private final FileService fileService;
+    private final NotificationService notificationService;
 
     public void saveMessage(MessageRequest messageRequest) {
         Chat chat = chatRepository.findById(messageRequest.getChatId())
@@ -36,7 +41,17 @@ public class MessageService {
         message.setState(MessageState.SENT);
         messageRepository.save(message);
 
-        // todo notification
+        Notification notification = Notification.builder()
+            .chatId(chat.getId())
+            .messageType(messageRequest.getType())
+            .content(messageRequest.getContent())
+            .senderId(messageRequest.getSenderId())
+            .receiverId(messageRequest.getReceiverId())
+            .type(NotificationType.MESSAGE)
+            .chatName(chat.getChatName(message.getSenderId()))
+            .build();
+        
+        notificationService.sendNotification(message.getReceiverId(), notification);
     }
 
     public List<MessageResponse> findChatMessages(String chatId) {
@@ -51,11 +66,18 @@ public class MessageService {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found"));
 
-        // todo final String recipientId = getRecipientId(chat, authentication);
+        final String recipientId = getRecipientId(chat, authentication);
 
         messageRepository.setMessagesToSeenByChatId(chatId, MessageState.SEEN);
 
-        // todo send notification
+        Notification notification = Notification.builder()
+            .chatId(chat.getId())
+            .senderId(getSenderId(chat, authentication))
+            .receiverId(recipientId)
+            .type(NotificationType.SEEN)
+            .build();
+        
+        notificationService.sendNotification(recipientId, notification);
     }
 
     public void uploadMediaMessage(String chatId, MultipartFile file, Authentication authentication) {
@@ -74,7 +96,16 @@ public class MessageService {
         message.setMediaFilePath(filePath);
         messageRepository.save(message);
 
-        // todo notification
+        Notification notification = Notification.builder()
+            .chatId(chat.getId())
+            .type(NotificationType.IMAGE)
+            .messageType(MessageType.IMAGE)
+            .senderId(senderId)
+            .receiverId(recipientId)
+            .media(FileUtils.readFileFromLocation(filePath))
+            .build();
+        
+        notificationService.sendNotification(recipientId, notification);
     }
 
     private String getSenderId(Chat chat, Authentication authentication) {
