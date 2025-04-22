@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import Keycloak from 'keycloak-js';
 
 @Injectable({
@@ -6,7 +7,10 @@ import Keycloak from 'keycloak-js';
 })
 export class KeycloakService {
   private _keycloak: Keycloak | undefined;
-  constructor() {}
+
+  constructor(
+    private router: Router
+  ) {}
 
   get keycloak() {
     if (!this._keycloak) {
