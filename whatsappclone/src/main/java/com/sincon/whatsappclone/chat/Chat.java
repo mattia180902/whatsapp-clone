@@ -35,7 +35,8 @@ import lombok.Setter;
 @NamedQuery(name = ChatConstants.FIND_CHAT_BY_SENDER_ID,
 query = "SELECT DISTINCT c FROM Chat c WHERE c.sender.id = :senderId OR c.recipient.id = :senderId ORDER BY createdDate DESC")
 @NamedQuery(name = ChatConstants.FIND_CHAT_BY_SENDER_ID_AND_RECEIVER_ID,
-query="SELECT DISTINCT c FROM Chat c WHERE (c.sender.id = :senderId AND c.recipient.id = :recipientId) OR (c.recipient.id = :recipientId AND c.sender.id = :senderId)")
+query = "SELECT DISTINCT c FROM Chat c WHERE (c.sender.id = :senderId AND c.recipient.id = :recipientId) OR (c.sender.id = :recipientId AND c.recipient.id = :senderId) ORDER BY createdDate DESC"
+)
 public class Chat extends BaseAuditingEntity{
 
     @Id
@@ -57,6 +58,14 @@ public class Chat extends BaseAuditingEntity{
     @Transient
     public String getChatName(final String senderId) {
         if (recipient.getId().equals(senderId)) {
+            return sender.getFirstName() + " " + sender.getLastName();
+        }
+        return recipient.getFirstName() + " " + recipient.getLastName();
+    }
+
+    @Transient
+    public String getTargetChatName(final String senderId) {
+        if (sender.getId().equals(senderId)) {
             return sender.getFirstName() + " " + sender.getLastName();
         }
         return recipient.getFirstName() + " " + recipient.getLastName();

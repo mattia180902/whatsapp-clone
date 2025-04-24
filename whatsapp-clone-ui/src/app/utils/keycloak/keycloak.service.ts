@@ -6,6 +6,7 @@ import Keycloak from 'keycloak-js';
   providedIn: 'root',
 })
 export class KeycloakService {
+
   private _keycloak: Keycloak | undefined;
 
   constructor(
@@ -46,7 +47,7 @@ export class KeycloakService {
   }
 
   logout() {
-    return this.keycloak.login({ redirectUri: 'http://localhost:4200' });
+    return this.keycloak.logout({ redirectUri: 'http://localhost:4200' });
   }
 
   accountManagement() {

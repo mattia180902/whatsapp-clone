@@ -6,17 +6,21 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { KeycloakService } from './utils/keycloak/keycloak.service';
 import { keycloakHttpInterceptor } from './utils/http/keycloak-http.interceptor';
 
+export function kcFactory(kcService: KeycloakService) {
+  return () => kcService.init();
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true}),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
       withInterceptors([keycloakHttpInterceptor])
     ),
     provideAppInitializer(() => {
       const initFn = ((key: KeycloakService) => {
-        return () => key.init();
-      }) (inject(KeycloakService));
+        return () => key.init()
+      })(inject(KeycloakService));
       return initFn();
     })
   ]

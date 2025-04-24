@@ -15,7 +15,7 @@ public class UserMapper {
             user.setId(attributes.get("sub").toString());
         }
 
-        if (attributes.containsKey("given name")) {
+        if (attributes.containsKey("given_name")) {
             user.setFirstName(attributes.get("given_name").toString());
         } else if (attributes.containsKey("nickname")) {
             user.setFirstName(attributes.get("nickname").toString());
